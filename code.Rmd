@@ -1,0 +1,63 @@
+---
+title: "Exploring the properties of exponentials distribution"
+output: pdf_document
+---
+
+###Overview
+
+In this report we will simulate the distribution of averages of 40 exponentials. In total there will be 1000 simulations. Then we'll see some properties of the distribution and the CLT in action.
+
+###Simulations
+
+In this section we simulate 1000 samples of 40 exponentials, find their averages and variances.
+
+```{r}
+means<-c()
+vars<-c()
+for (i in seq(1,1000)) {
+    exps<-rexp(40, rate=0.2)
+    means<-c(means, mean(exps))
+    vars<-c(vars, var(exps))
+}
+
+```
+
+###Sample Mean versus Theoretical Mean
+
+Now we compare the sample mean in our 1000 simulations with the  theoritical mean, which is known to be 1/lambda.
+
+```{r fig.width=7, fig.height=4}
+
+hist(means)
+abline(v=mean(means), col="red", lwd=2)
+abline(v=1/0.2, col="blue", lwd=2)
+
+```
+
+The blue line in this figure represents the theoretical mean, histogram - distribution of means of our 1000 samples, red line - mean of this sample distribution. As it is seen, blue and red lines almost perfectly match, as predicted by the CLT.
+
+###Sample Variance versus Theoretical Variance
+
+Now we compare the sample variance in our 1000 simulations with the  theoritical variance, which is known to be 1/lambda.
+
+```{r}
+hist(vars)
+abline(v=mean(vars), col="red", lwd=2)
+abline(v=(1/0.2)^2, col="blue", lwd=2)
+
+```
+
+The blue line in this figure represents the theoretical vaiance, histogram - distribution of variances of our 1000 samples, red line - mean of this sample distribution of variances. As it is seen, blue and red lines almost perfectly match.
+
+###Distribution
+
+Now we show that distribution of sample means is approximately normal by comparing it with distributions of exponentials.
+
+```{r}
+par(mfrow=c(1,2))
+exps <- rexp(1000, rate=0.2)
+hist(exps)
+hist(means)
+```
+
+From the figures above we see that the distributions of means looks much more bell-shaped (Gaussian) than the original distribution of exponentials.

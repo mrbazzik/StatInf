@@ -1,0 +1,109 @@
+---
+title: "Exploring the tooth growth"
+output: pdf_document
+---
+
+###Overview
+
+In this report we will explore the response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid).
+
+(We can get this info with the command ?ToothGrowth)
+
+###Loading data
+
+```{r}
+library(datasets)
+data(ToothGrowth)
+
+```
+
+###Exploratory analysis
+
+First, let's get some summary info.
+```{r}
+str(ToothGrowth)
+summary(ToothGrowth)
+
+```
+
+Now we build some conditional graphs, using ggplot2.
+
+```{r fig.width=7, fig.height=4}
+
+library(ggplot2)
+ToothGrowth$dose<-factor(ToothGrowth$dose)
+
+qplot(supp,len, data=ToothGrowth, facets=.~dose, geom="boxplot")
+qplot(dose,len, data=ToothGrowth, facets=.~supp, geom="boxplot")
+
+```
+
+From this figures we see that increasing dose leads to greater tooth growth (which makes sense if vitamin works) and orange juice (OJ) seems to be more effective delivery method at least at two dose levels (0.5 and 1).
+
+We can see the whole picture on single figure by combining these graphs with the help of colors.
+
+```{r fig.width=7, fig.height=4}
+
+qplot(dose,len, data=ToothGrowth, col=supp, geom="boxplot")
+
+```
+
+###Hypothesis testing
+
+We'll use t-tests for our hypothesis, assuming that sample means have approximately normal distributions, so with small sample sizes t-distribution will be a good approximation. 
+Since we don't know object's id for each record in dataset we can't perform dependent (paired) t-test, so we'll use independent one.
+
+Considering our previous exploratory analysis we'll test two hypothesis:
+
+1) Increasing dose increases tooth growth
+
+MUo = difference in means is equal to 0
+
+We have 3 types of dose, so we should do 3 t-tests.
+
+Consider variances to be not equal.
+```{r}
+library(dplyr)
+
+t.test(filter(ToothGrowth, dose=="0.5")$len,filter(ToothGrowth, dose=="1")$len, paired=F, var.equal=F)
+
+```
+p-value is very small, so difference is significant at 0.05 level and even at 0.01.
+Also we see that confidence interval doesn't contain 0, but is far below it.
+
+We can make the same inference for other two tests.
+```{r}
+t.test(filter(ToothGrowth, dose=="1")$len,filter(ToothGrowth, dose=="2")$len, paired=F, var.equal=F)
+
+t.test(filter(ToothGrowth, dose=="0.5")$len,filter(ToothGrowth, dose=="2")$len, paired=F, var.equal=F)
+
+```
+
+2) Delivery method influences the tooth growth
+
+MUo = difference in means is equal to 0.
+
+Consider variances to be not equal.
+
+```{r}
+
+t.test(filter(ToothGrowth, supp=="VC")$len,filter(ToothGrowth, supp=="OJ")$len, paired=F, var.equal=F)
+
+```
+p-value>0.05, so difference is not significant at 0.05 level.
+Looking at confidence interval, we see that it contains 0.
+
+But considering our exploratory analysis above we may want to exclude records with  dose=2 and test differences for other doses.
+
+```{r}
+
+t.test(filter(ToothGrowth, supp=="VC" & dose !=2)$len,filter(ToothGrowth, supp=="OJ"& dose!=2)$len, paired=F, var.equal=F)
+
+```
+Now we see significance at 0.05 and 0.01 levels, and confidence interval doesn't contain 0.
+
+###Summary
+
+We assume that sample means have approximately normal distributions, so with small sample sizes t-distribution will be a good approximation.
+
+Having done independent t-tests, we can conclude that increasing dose increases tooth growth (at 0.01 significance level) and orange juice is more effective delivery method for tooth growth for doses=0.5 or 1 (at 0.01 significance level).
